@@ -1,0 +1,130 @@
+===========
+=== irk ===
+===========
+
+Irk is a small, light weight daemon intended to expose monitoring data
+about a machine via a built in http server. This is kind of a special
+use case application as it is intended for large deploys where looping
+through machines calling SSH is expensive and time consuming.
+
+
+Table of contents
+=================
+1. Overview
+2. History
+3. Security
+4. Building irk
+5. To Do
+
+1. Overview
+===========
+
+The idea behind Irk is to give a simple, cached interface for viewing
+metrics from a machine via a http interface. The expected use case is
+to either plug this data into a metric collection system, or to
+manually query it across thousands of instances at once. The primary
+value it is attempting to add is to make querying otherwise complex
+pieces of data trivial at scale.
+
+
+2. History
+==========
+
+Irk is actually a second generation of a piece of software that I took
+over from Eric Maland. That software attempted to accomplish the same
+goals and was used quite extensively.
+
+I started writing Irk in C primarily because I am really rusty with
+my C skill set and figured that this would be a good way to modernize.
+It also forces me to learn many of the low-lying technology stacks
+such as Unicode, and HTTP which otherwise are obscured by higher
+level APIs. However C is not a completely arbitrary decision as it
+was found that the GIL would often cause locking and process slowdown
+in the python based version.
+
+Ideally though it will be possible to write modules in many languages
+given that one of the distinct advantages to a system like this is its
+ability to collect data very trivially.
+
+
+3. Security
+===========
+
+Irk can create a major security problem if not deployed correctly,
+please read the documentation and ensure you do not deploy modules
+from untrusted sources without review.
+
+Irk has the ability to run data collectors as any user, including
+root. This is a necessity as many of the sources of information
+can only be accessed as root. It will be possible to disable all
+root based checks via a command line argument or in the configuration
+file, however this might limit the availability of specific data
+to the web interface.
+
+Typical deployment of Irk would be to ensure that it is not
+exposed to the internet and is only accessible on a local network
+where the users are at least somewhat more trustworthy than
+strangers.
+
+Typically all data collector modules should be read-only with
+no ability to change or modify data on the machine so they
+should be safe to run, however its always best to verify what
+the module is doing exactly before running it to eliminate
+possible security risks.
+
+
+4. Building irk
+===============
+
+Irk is built with scons rather than make. You will need to install
+it before you can actually build irk. Irk also uses libevent,
+specifically for its http implementation and scheduling.
+
+scons: http://www.scons.org/
+libevent: http://libevent.org/
+
+Once both dependencies have been met building irk should be as
+simple as running:
+
+scons
+
+Right now irk can be built on a Linux or MacOS machine, however
+the technology should be compatible with most modern Unix based
+OSes, and may be compatible with Windows in future releases, however
+lack of access to anything beyond MacOS and Linux limits testing
+and development.
+
+Ideally in future releases it will also be possible to build
+RPM or DEB files directly using scons in order to simplify
+package maintainers lives for distributions.
+
+
+5. To Do
+========
+Irk is currently very incomplete, and as such there is still a lot
+of work that needs done. I am currently using this section of the
+README to track what needs done before a release can be made.
+
+* Unit Testing
+  - Integrate Unit Test framework into Sconstruct
+  - Write Unit Tests
+* Component isolation
+  - Need to define and document the components
+    + Master
+    + Collector
+    + HTTP Server
+  - Need to clean header files and locations.
+* Logging framework
+  - Need to finish conversion from syslog() to internal
+    logging wrapper.
+  - Need to add arguments for logging levels and file
+    based output.
+  - Need to expose logging functions to the module API.
+* HTTP Server
+  - Need to define a HTTP protocol and document it.
+  - Need to integrate JSON libraries for data management.
+* Other
+  - Need to finish the module scheduler which will use
+    libevent to schedule and then execute module checks.
+  - Need to write the Master IPC layer which will use socketed
+    communication between other components.
