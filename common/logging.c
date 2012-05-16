@@ -37,9 +37,10 @@ log_error(
 
   // Console
   vfprintf(stderr, message, args);
+  fprintf(stderr, "\n");
 
   // Syslog
-  vsyslog(LOG_ERR, message, args);
+  //vsyslog(LOG_ERR, message, args);
 
   va_end(args);
 }
@@ -54,9 +55,29 @@ log_warning(
 
   // Console
   vfprintf(stderr, message, args);
+  fprintf(stderr, "\n");
 
   // Syslog
-  vsyslog(LOG_ERR, message, args);
+  //vsyslog(LOG_WARNING, message, args);
+
+  va_end(args);
+}
+
+
+void
+log_info(
+  const char *message,
+  ...)
+{
+  va_list args;
+  va_start(args, message);
+
+  // Console
+  vfprintf(stderr, message, args);
+  fprintf(stderr, "\n");
+
+  // Syslog
+  //vsyslog(LOG_DEBUG, message, args);
 
   va_end(args);
 }
@@ -71,9 +92,28 @@ log_debug(
 
   // Console
   vfprintf(stderr, message, args);
+  fprintf(stderr, "\n");
 
   // Syslog
-  vsyslog(LOG_ERR, message, args);
+  //vsyslog(LOG_DEBUG, message, args);
+
+  va_end(args);
+}
+
+void
+log_security(
+  const char *message,
+  ...)
+{
+  va_list args;
+  va_start(args, message);
+
+  // Console
+  vfprintf(stderr, message, args);
+  fprintf(stderr, "\n");
+
+  // Syslog
+  //vsyslog(LOG_DEBUG, message, args);
 
   va_end(args);
 }

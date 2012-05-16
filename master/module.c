@@ -29,8 +29,11 @@ DEALINGS IN THE SOFTWARE.
 #include <sys/types.h>
 #include <string.h>
 
+#include <common/config.h>
 #include <common/logging.h>
+#include <common/strhash.h>
 #include <master/module.h>
+#include <security/security.h>
 
 
 
@@ -136,30 +139,62 @@ modules_load_walkfiles(
     struct module_file_list **list,
     int *length)
 {
+  // Initialize a cache to store cached security information in.
+  strhash *cache = strhash_init(511);
+  if (cache == NULL) {
+    log_debug("strhash_init(511) error: %s", strerror(errno));
+    return errno;
+  }
+
   // Walk the results.
   while (true) {
     errno = 0;
     FTSENT *f = fts_read(d);
+    if (errno != 0) {
+      log_error(
+          "Error reading modules directory (%s): %s",
+          path,
+          strerror(errno));
+    }
+
     if (f == NULL) {
-      if (errno == 0) {
-        // End of the file stream with no errors.
-        return 0;
-      } else {
-        log_error(
-            "Error reading modules directory (%s): %s",
-            path,
-            strerror(errno));
-        break;
-      }
+      // End of the file stream with no errors. Clear up the cache and
+      // return success.
+      strhash_destroy(cache, NULL);
+      return 0;
     }
 
-    // If we encounter a directory in our walk then we 
-    if (f->fts_info == FTS_D) {
+    // On recursion fts returns FTS_DC when it returns to a directory. We
+    // simply ignore this type.
+    if (f->fts_info == FTS_DP) {
+      continue;
     }
 
-    // Don't bother loading anything that isn't even a file.
-    if (f->fts_info != FTS_F) {
-      log_debug("Not loading module in non-file: %s\n", f->fts_path);
+    // Don't bother loading anything that isn't even a file or directory.
+    if ( (f->fts_info & (FTS_F | FTS_D)) == 0) {
+      log_debug("Not considering module in non-file: %s\n", f->fts_path);
+      continue;
+    }
+
+    // We only load files with the ".irkmod" extension. This ensures that we
+    // do not accidentally load some unrelated library with a horrible
+    // _init() function.
+    if ((f->fts_info & FTS_F) != 0 &&
+        (f->fts_namelen < 7 ||
+         strncmp(f->fts_name + f->fts_namelen - 7, ".irkmod", 7))) {
+      log_info("Not loading file (%s): bad extension.", f->fts_path);
+      continue;
+    }
+
+    // SECURITY CHECKS
+    if (security_check_path(f->fts_path, cache) != S_OK) {
+      log_debug("security_check_path(%s) failed.", f->fts_path);
+      log_error("Can not load module file %s, it is not secure.", f->fts_path);
+      break;
+    }
+
+    // Beyond checking permissions we do nothing with directories.
+    if ( (f->fts_info & FTS_D) != 0) {
       continue;
     }
 
@@ -175,6 +210,7 @@ modules_load_walkfiles(
 
   // If we have gotten here then there has been an error somewhere.
   // Make sure we free the list we allocated, then return NULL.
+  strhash_destroy(cache, NULL);
   free_module_file_list(*list);
   return -1;
 }
@@ -226,8 +262,6 @@ modules_load_getlist(
   }
 
   if (fts_close(d)) {
-    // This shouldn't ever happen since we are not using chdir.. but still its
-    // good to check and log.
     log_error(
         "Error closing the modules directory (%s): %s",
         path,

@@ -20,8 +20,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef __DAEMON_MODULE_H
-#define __DAEMON_MODULE_H
+#ifndef __MASTER_MODULE_H
+#define __MASTER_MODULE_H
 
 #include <sys/stat.h>
 #include <stdbool.h>

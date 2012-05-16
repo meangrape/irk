@@ -20,33 +20,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef __COMMON_LOGGING_H
-#define __COMMON_LOGGING_H
+#ifndef __COMMON_CONFIG_H
+#define __COMMON_CONFIG_H
 
-// TODO: FIXME!
-void
-log_error(
-  const char *message,
-  ...);
+#include <stdbool.h>
 
-void
-log_warning(
-  const char *message,
-  ...);
-
-void
-log_info(
-  const char *message,
-  ...);
-
-void
-log_debug(
-  const char *message,
-  ...);
-
-void
-log_security(
-  const char *message,
-  ...);
 
 #endif

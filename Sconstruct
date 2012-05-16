@@ -31,12 +31,15 @@ e.VariantDir('build', '.')
 e.Program(
     'build/irkd',
     source = [
-        'collector/api.c',
-        'collector/main.c',
-        'collector/scheduler.c',
-        'common/logging.c',
-        'httpserver/httpserver.c',
-        'master/module.c',
+        'build/collector/api.c',
+        'build/collector/scheduler.c',
+        'build/common/config.c',
+        'build/common/logging.c',
+        'build/common/main.c',
+        'build/common/strhash.c',
+        'build/httpserver/httpserver.c',
+        'build/master/module.c',
+        'build/security/security.c',
 
         '/opt/local/lib/libevent.a',
       ])

@@ -20,33 +20,36 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef __COMMON_LOGGING_H
-#define __COMMON_LOGGING_H
+#include <event.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-// TODO: FIXME!
-void
-log_error(
-  const char *message,
-  ...);
+#include <common/config.h>
+#include <master/module.h>
+#include <security/security.h>
 
-void
-log_warning(
-  const char *message,
-  ...);
 
-void
-log_info(
-  const char *message,
-  ...);
+void httpserver_main(void) {
+  struct event_base *eb;
 
-void
-log_debug(
-  const char *message,
-  ...);
+  // Create the event server structure.
+  eb = event_init();
 
-void
-log_security(
-  const char *message,
-  ...);
+  // TODO(brady): Do stuff here!
 
-#endif
+  // Hand off work to the event loop.
+  if (event_base_dispatch(eb) != 0) {
+    // TODO(brady): Log the error here!
+  }
+
+  // Everything worked.. Exit properly.
+  exit(0);
+}
+
+
+int main(int argc, char **argv) {
+//  config_skip_permission_checks = true;
+//  config_skip_ownership_checks = true;
+
+  return modules_load("/irk_test/libexec/modules", NULL, 0);
+}

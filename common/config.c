@@ -20,31 +20,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#include <event.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdbool.h>
 
-#include <master/module.h>
-
-
-void httpserver_main(void) {
-  struct event_base *eb;
-
-  // Create the event server structure.
-  eb = event_init();
-
-  // TODO(brady): Do stuff here!
-
-  // Hand off work to the event loop.
-  if (event_base_dispatch(eb) != 0) {
-    // TODO(brady): Log the error here!
-  }
-
-  // Everything worked.. Exit properly.
-  exit(0);
-}
-
-
-int main(int argc, char **argv) {
-  return modules_load("build/modules", NULL, 0);
-}
+#include <common/config.h>
